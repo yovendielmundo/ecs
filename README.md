@@ -16,7 +16,7 @@ Basic shell interface to play the simulation
 commands:
 $: status
 $: step
-$: pickup <goal-floor> <direction>
+$: pickup <pickup-floor> <direction>
 $: update <elevator-id> <floor> <goal-floor>
 $: exit
 ```
