@@ -10,23 +10,6 @@ class MyElevatorControlSystem(val numberOfElevators: Int = 3) extends ElevatorCo
   val elevators = (1 to numberOfElevators).map(id => id -> Elevator(id)).toMap
 
   /**
-    * Ordering in priority queue
-    * The less busy approach is not the best but this function can be easily improved
-    */
-  val lessBusyElevator: Ordering[Elevator] = (x: Elevator, y: Elevator) => x.lessBusyFactor - y.lessBusyFactor
-
-  /**
-    * Priority queue of elevators to send pickup requests
-    * The priority is the less busy elevator
-    */
-  val priorityQueue = elevators.foldLeft(mutable.PriorityQueue[Elevator]()(ord = lessBusyElevator)) {
-    case (pq, (_, elevator)) => {
-      pq.enqueue(elevator)
-      pq
-    }
-  }
-
-  /**
     * Querying the state of the elevators.
     * what floor are they on and where they are going
     *
@@ -57,22 +40,32 @@ override def update(elevatorId: Int, floor: Int, goalFloor: Int): Unit = {
     * @param direction
     */
   override def pickup(pickupFloor: Int, direction: Int): Unit = {
-    if (priorityQueue.nonEmpty) {
-      val dir: Direction = if (direction < 0) Down else Up
-      val elevator = priorityQueue.dequeue()
-      if (elevator.isStopped || elevator.pickupDirection == dir) elevator.pickup(pickupFloor, dir)
-      if (elevator.canPickup) priorityQueue.enqueue(elevator)
+    // Ordering implicit function used in priority queue
+    // We can improved the priority queue just changing this function adding more variables
+    implicit val lessBusyElevator: Ordering[Elevator] =
+      (x: Elevator, y: Elevator) => x.lessBusyFactor - y.lessBusyFactor
+
+    val dir: Direction = if (direction < 0) Down else Up
+
+    val priorityQueue = elevators.values
+      .filter(_.canPickup)
+      .filter(e => e.isOnTheWay(pickupFloor) || e.pickupDirection == dir)
+      .foldLeft(mutable.PriorityQueue[Elevator]()) {
+        case (priorityQueue, elevator) => {
+          priorityQueue.enqueue(elevator)
+          priorityQueue
+        }
     }
+
+    if (priorityQueue.nonEmpty)
+      priorityQueue.dequeue().pickup(pickupFloor, dir)
+
   }
 
   /**
     * Time-stepping the simulation
     */
   override def step: Unit = {
-    priorityQueue.dequeueAll
     elevators.foreach(_._2.step)
-    elevators.filter(_._2.canPickup).foreach { case (_, elevator) =>
-      priorityQueue.enqueue(elevator)
-    }
   }
 }

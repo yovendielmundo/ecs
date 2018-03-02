@@ -63,9 +63,11 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
 
   private def nextFloor: Int = floor + (if (isAscending) 1 else if (isDescending) -1 else 0)
 
-  private def isOnTheWay(goalFloor: Int): Boolean =
-    if (isAscending) goalFloor > floor
-    else goalFloor < floor
+  def isOnTheWay(goalFloor: Int): Boolean =
+    if (isStopped) true
+    else if (isAscending) goalFloor > floor
+    else if (isDescending) goalFloor < floor
+    else false
 
   private def updateState: Unit = {
     if (goalFloors.nonEmpty  && floor == goalFloors.head)

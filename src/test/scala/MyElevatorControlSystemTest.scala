@@ -50,19 +50,19 @@ class MyElevatorControlSystemTest extends FunSuite with Matchers {
     ecs.pickup(pickupFloor = 4, direction = -1)
 
     ecs.status should contain theSameElementsAs
-      Seq(Status(1, 0, List(3)), Status(2), Status(3, 0, List(4)))
+      Seq(Status(1, 0, List(3)), Status(2, 0, List(4)), Status(3))
 
     // pickup request at 5st floor to go down
     ecs.pickup(pickupFloor = 5, direction = -1)
 
     ecs.status should contain theSameElementsAs
-      Seq(Status(1, 0, List(3)), Status(2, 0, List(5)), Status(3, 0, List(4)))
+      Seq(Status(1, 0, List(3)), Status(2, 0, List(4)), Status(3, 0, List(5)))
 
     // pickup request at 6st floor to go down
     ecs.pickup(pickupFloor = 6, direction = -1)
 
     ecs.status should contain theSameElementsAs
-      Seq(Status(1, 0, List(3)), Status(2, 0, List(5)), Status(3, 0, List(4, 6)))
+      Seq(Status(1, 0, List(3, 6)), Status(2, 0, List(4)), Status(3, 0, List(5)))
 
   }
 
@@ -77,7 +77,7 @@ class MyElevatorControlSystemTest extends FunSuite with Matchers {
     ecs.step
 
     ecs.status should contain theSameElementsAs
-      Seq(Status(1, 3), Status(2), Status(3, 3, List(4)))
+      Seq(Status(1, 3), Status(2, 3, List(4)), Status(3))
   }
 
 }
