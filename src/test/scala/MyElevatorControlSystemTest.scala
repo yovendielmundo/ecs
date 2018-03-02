@@ -37,4 +37,47 @@ class MyElevatorControlSystemTest extends FunSuite with Matchers {
       Seq(Status(1), Status(2), Status(3))
   }
 
+  test("test ecs handle many pickup requests") {
+    val ecs = new MyElevatorControlSystem()
+
+    // pickup request at 3st floor to go down
+    ecs.pickup(pickupFloor = 3, direction = -1)
+
+    ecs.status should contain theSameElementsAs
+      Seq(Status(1, 0, List(3)), Status(2), Status(3))
+
+    // pickup request at 4st floor to go down
+    ecs.pickup(pickupFloor = 4, direction = -1)
+
+    ecs.status should contain theSameElementsAs
+      Seq(Status(1, 0, List(3)), Status(2), Status(3, 0, List(4)))
+
+    // pickup request at 5st floor to go down
+    ecs.pickup(pickupFloor = 5, direction = -1)
+
+    ecs.status should contain theSameElementsAs
+      Seq(Status(1, 0, List(3)), Status(2, 0, List(5)), Status(3, 0, List(4)))
+
+    // pickup request at 6st floor to go down
+    ecs.pickup(pickupFloor = 6, direction = -1)
+
+    ecs.status should contain theSameElementsAs
+      Seq(Status(1, 0, List(3)), Status(2, 0, List(5)), Status(3, 0, List(4, 6)))
+
+  }
+
+  test("test ecs make some steps") {
+    val ecs = new MyElevatorControlSystem()
+
+    ecs.pickup(pickupFloor = 3, direction = -1)
+    ecs.pickup(pickupFloor = 4, direction = -1)
+
+    ecs.step
+    ecs.step
+    ecs.step
+
+    ecs.status should contain theSameElementsAs
+      Seq(Status(1, 3), Status(2), Status(3, 3, List(4)))
+  }
+
 }

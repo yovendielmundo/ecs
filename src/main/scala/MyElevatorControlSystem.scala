@@ -1,3 +1,5 @@
+import Elevator.{Direction, Down, Up}
+
 import scala.collection.mutable
 
 class MyElevatorControlSystem(val numberOfElevators: Int = 3) extends ElevatorControlSystem {
@@ -7,16 +9,23 @@ class MyElevatorControlSystem(val numberOfElevators: Int = 3) extends ElevatorCo
     */
   val elevators = (1 to numberOfElevators).map(id => id -> Elevator(id)).toMap
 
-
   /**
     * Ordering in priority queue
+    * The less busy approach is not the best but this function can be easily improved
     */
   val lessBusyElevator: Ordering[Elevator] = (x: Elevator, y: Elevator) => x.lessBusyFactor - y.lessBusyFactor
+
   /**
     * Priority queue of elevators to send pickup requests
     * The priority is the less busy elevator
     */
-  val priorityQueue = mutable.PriorityQueue[Elevator]()(ord = lessBusyElevator)
+  val priorityQueue = elevators.foldLeft(mutable.PriorityQueue[Elevator]()(ord = lessBusyElevator)) {
+    case (pq, (_, elevator)) => {
+      pq.enqueue(elevator)
+      pq
+    }
+  }
+
   /**
     * Querying the state of the elevators.
     * what floor are they on and where they are going
@@ -48,17 +57,22 @@ override def update(elevatorId: Int, floor: Int, goalFloor: Int): Unit = {
     * @param direction
     */
   override def pickup(pickupFloor: Int, direction: Int): Unit = {
-    // 1. dequeue elevator from priorityQueue
-    // 2. send pickup request
-    // 3. enqueue elevator again if canPickup
+    if (priorityQueue.nonEmpty) {
+      val dir: Direction = if (direction < 0) Down else Up
+      val elevator = priorityQueue.dequeue()
+      if (elevator.isStopped || elevator.pickupDirection == dir) elevator.pickup(pickupFloor, dir)
+      if (elevator.canPickup) priorityQueue.enqueue(elevator)
+    }
   }
 
   /**
     * Time-stepping the simulation
     */
   override def step: Unit = {
-    // 1. dequeue all elevators
-    // 2. iterate all elevators and do step
-    // 3. enqueue all elevators again if canPickup
+    priorityQueue.dequeueAll
+    elevators.foreach(_._2.step)
+    elevators.filter(_._2.canPickup).foreach { case (_, elevator) =>
+      priorityQueue.enqueue(elevator)
+    }
   }
 }
