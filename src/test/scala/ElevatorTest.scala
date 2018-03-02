@@ -14,7 +14,7 @@ class ElevatorTest extends FunSuite with Matchers {
   test("test get status") {
     val elevator = Elevator(1)
 
-    elevator.status should be(Status(id = 1, floor = 0, goalFloor = List()))
+    elevator.status should be(Status(id = 1, goalFloor = List()))
   }
 
   test("test update status") {
@@ -90,7 +90,7 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.status should be(Status(1, 4, List(5)))
   }
 
-  test("test set to pickup many passengers in the same direction") {
+  test("test make many pickup requests in the same direction") {
     val elevator = Elevator(id = 1)
 
     elevator.pickup(goalFloor = 3, direction = Down)
@@ -103,7 +103,7 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.status should be(Status(1, 0, List(3, 5, 6)))
   }
 
-  test("test goals floors list is ascending when elevator is ascending") {
+  test("test goalFloors list is ascending when elevator is ascending") {
     val elevator = Elevator(id = 1, maxNumberOfGoals = 5)
 
     elevator.pickup(goalFloor = 3, direction = Down)
@@ -123,7 +123,7 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.isAscending should be(true)
   }
 
-  test("test goals floors list is descending when elevator is descending") {
+  test("test the goalFloors list is descending when elevator is descending") {
     val elevator = Elevator(id = 1, maxNumberOfGoals = 5)
 
     elevator.update(floor = 10, goalFloor = 0)
@@ -224,9 +224,7 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.status should be(Status(1, 4, List()))
   }
 
-
-
-  test("test to do steps picking up many goal floors") {
+  test("test to do steps an many pickup request at the same time") {
     val elevator = Elevator(id = 1)
 
     elevator.pickup(goalFloor = 4, direction = Down)
@@ -265,5 +263,45 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.status should be(Status(1, 6, List()))
   }
 
+
+  test("test to do steps ascending and descending") {
+    val elevator = Elevator(id = 1)
+
+    elevator.pickup(goalFloor = 4, direction = Down)
+
+    elevator.step
+    elevator.floor should be(1)
+
+    elevator.step
+    elevator.floor should be(2)
+
+    elevator.step
+    elevator.floor should be(3)
+
+    // pickup should be ignored
+    elevator.pickup(goalFloor = 1, direction = Up)
+    elevator.status should be(Status(1, 3, List(4)))
+
+    elevator.step
+    elevator.floor should be(4)
+    elevator.status should be(Status(1, 4, List()))
+    elevator.isStopped should be(true)
+
+    // this time the pickup should be accepted
+    elevator.pickup(goalFloor = 1, direction = Up)
+    elevator.status should be(Status(1, 4, List(1)))
+
+    elevator.step
+    elevator.floor should be(3)
+
+    elevator.step
+    elevator.floor should be(2)
+
+    elevator.step
+    elevator.floor should be(1)
+    elevator.pickupDirection should be(NoDirection)
+    elevator.isStopped should be(true)
+    elevator.status should be(Status(1, 1, List()))
+  }
 
 }

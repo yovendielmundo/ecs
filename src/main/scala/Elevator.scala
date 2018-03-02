@@ -21,7 +21,7 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
   var goalFloors: List[Int] = List()
   var pickupDirection: Direction = NoDirection
 
-  def update(floor: Int, goalFloor: Int) = {
+  def update(floor: Int, goalFloor: Int): Unit = {
     this.floor = floor
     goalFloors = List(goalFloor)
   }
@@ -51,7 +51,6 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
     updateState
   }
 
-
   def isAscending: Boolean = goalFloors.head > floor
 
   def isDescending: Boolean = goalFloors.head < floor
@@ -66,15 +65,15 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
     if (isAscending) goalFloor > floor
     else goalFloor < floor
 
-  private def updateState(): Unit = {
-    if (!goalFloors.isEmpty  && floor == goalFloors.head)
+  private def updateState: Unit = {
+    if (goalFloors.nonEmpty  && floor == goalFloors.head)
       goalFloors = goalFloors.tail
 
     if (goalFloors.isEmpty)
       pickupDirection = NoDirection
   }
 
-  private def currentOrd(): Ordering[Int] =
+  private def currentOrd: Ordering[Int] =
     if (isAscending) (x: Int, y: Int) => x - y
     else (x: Int, y: Int) => y - x
 
@@ -84,10 +83,5 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
       if (ord.lt(y, z)) y :: z :: zs
       else z :: insert(y, zs)
   }
-
-//  def insert(xs: List[Int], x: Int)(implicit ord: Ordering[Int]): List[Int] = {
-//    val (h, t) = xs.span(ord.lt(_, x))
-//    h ::: (x :: t)
-//  }
 }
 
