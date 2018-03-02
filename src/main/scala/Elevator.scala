@@ -59,6 +59,8 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
 
   def isMoving: Boolean = !isStopped
 
+  def lessBusyFactor: Int = maxNumberOfGoals - goalFloors.size
+
   private def nextFloor: Int = floor + (if (isAscending) 1 else if (isDescending) -1 else 0)
 
   private def isOnTheWay(goalFloor: Int): Boolean =
