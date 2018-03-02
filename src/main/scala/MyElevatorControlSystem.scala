@@ -1,11 +1,16 @@
 class MyElevatorControlSystem(val numberOfElevators: Int) extends ElevatorControlSystem {
+
+  /**
+    * Elevators in the control system
+    */
+  val elevators = (1 to numberOfElevators).map(id => id -> Elevator(id)).toMap
   /**
     * Querying the state of the elevators.
     * what floor are they on and where they are going
     *
     * @return
     */
-  override def status(): Seq[Elevator.Status] = ???
+  override def status: Seq[Elevator.Status] = ???
 
   /**
     * Receiving an update about the status of an elevator.
@@ -31,5 +36,5 @@ override def update(elevatorId: Int, floor: Int, goalFloor: Int): Unit = ???
   /**
     * Time-stepping the simulation
     */
-  override def step(): Unit = ???
+  override def step: Unit = ???
 }

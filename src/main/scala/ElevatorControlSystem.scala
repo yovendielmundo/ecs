@@ -5,7 +5,7 @@ trait ElevatorControlSystem {
     * what floor are they on and where they are going
     * @return
     */
-  def status(): Seq[(Int, Int, Int)]
+  def status: Seq[Elevator.Status]
 
 
   /**
@@ -30,5 +30,5 @@ trait ElevatorControlSystem {
   /**
     * Time-stepping the simulation
     */
-  def step()
+  def step
 }
