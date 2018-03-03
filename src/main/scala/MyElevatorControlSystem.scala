@@ -1,7 +1,5 @@
 import Elevator.{Direction, Down, Up}
 
-import scala.collection.mutable
-
 class MyElevatorControlSystem(val numberOfElevators: Int = 3) extends ElevatorControlSystem {
 
   /**
@@ -40,26 +38,16 @@ override def update(elevatorId: Int, floor: Int, goalFloor: Int): Unit = {
     * @param direction
     */
   override def pickup(pickupFloor: Int, direction: Int): Unit = {
-    // Ordering implicit function used in priority queue
-    // We can improved the priority queue just changing this function adding more variables
-    implicit val lessBusyElevator: Ordering[Elevator] =
-      (x: Elevator, y: Elevator) => x.lessBusyFactor - y.lessBusyFactor
-
     val dir: Direction = if (direction < 0) Down else Up
 
-    val priorityQueue = elevators.values
-      .filter(_.canPickup)
-      .filter(e => e.isOnTheWay(pickupFloor) || e.pickupDirection == dir)
-      .foldLeft(mutable.PriorityQueue[Elevator]()) {
-        case (priorityQueue, elevator) => {
-          priorityQueue.enqueue(elevator)
-          priorityQueue
-        }
-    }
+    val priorityList = elevators.filter(_._2.canPickup(pickupFloor, dir))
+      .foldRight(List[Elevator]()) {
+        case ((_, elevator), acc) => elevator :: acc
+      }
+      // We can improved the priority list just changing this function adding more variables
+      .sortWith((e1, e2) => e1.lessBusyFactor > e2.lessBusyFactor)
 
-    if (priorityQueue.nonEmpty)
-      priorityQueue.dequeue().pickup(pickupFloor, dir)
-
+    if (priorityList.nonEmpty) priorityList.head.pickup(pickupFloor, dir)
   }
 
   /**
