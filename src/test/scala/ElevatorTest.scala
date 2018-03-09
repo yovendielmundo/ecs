@@ -42,7 +42,31 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.pickup(goalFloor = 3, direction = Down)
     elevator.pickup(goalFloor = 1, direction = Down)
 
-    elevator.canPickup should be(false)
+    elevator.canPickup(goalFloor = 4, direction = Down) should be(false)
+  }
+
+  test("test canPickup is false when pickup floor is not in the way") {
+    val elevator = Elevator(id = 1)
+
+    elevator.update(floor = 3, goalFloor = 5)
+    elevator.pickupDirection = Down
+
+    elevator.canPickup(goalFloor = 2, direction = Down) should be(false)
+  }
+
+  test("test canPickup is false when pickup direction is different from current pickup dorection") {
+    val elevator = Elevator(id = 1)
+
+    elevator.update(floor = 3, goalFloor = 5)
+    elevator.pickupDirection = Down
+
+    elevator.canPickup(goalFloor = 6, direction = Up) should be(false)
+  }
+
+  test("test canPickup is true when the elevator is stopped") {
+    val elevator = Elevator(id = 1)
+
+    elevator.canPickup(goalFloor = 5, direction = Down)  should be(true)
   }
 
   test("test canPickup is true when the elevator is not full") {
@@ -53,7 +77,7 @@ class ElevatorTest extends FunSuite with Matchers {
     elevator.pickup(goalFloor = 3, direction = Down)
     elevator.pickup(goalFloor = 4, direction = Down)
 
-    elevator.canPickup should be(true)
+    elevator.canPickup(goalFloor = 5, direction = Down)  should be(true)
   }
 
   test("test doesn't pickup passengers in an opposite direction") {

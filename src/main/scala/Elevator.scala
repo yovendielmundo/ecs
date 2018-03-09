@@ -1,4 +1,4 @@
-import Elevator.{Direction, Id, NoDirection, Status}
+import Elevator._
 
 object Elevator {
   object Status {
@@ -29,20 +29,18 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
   def status: Status = Status(id, floor, goalFloors)
 
   def pickup(goalFloor: Int, direction: Direction): Unit = {
-    if (canPickup) {
-      if (goalFloors.isEmpty) {
-        pickupDirection = direction
-        goalFloors = List(goalFloor)
-      } else {
-
-        if (pickupDirection == direction && isOnTheWay(goalFloor))
-          goalFloors = insert(goalFloor, goalFloors)(currentOrd)
-
-      }
+    if (canPickup(goalFloor, direction)) {
+      if (isStopped) pickupDirection = direction
+      goalFloors = insert(goalFloor, goalFloors)(currentOrd)
     }
   }
 
-  def canPickup: Boolean = goalFloors.size < maxNumberOfGoals
+  def canPickup(goalFloor: Int, direction: Direction): Boolean = {
+    if (goalFloors.size >= maxNumberOfGoals) false
+    else if (pickupDirection != NoDirection && direction != pickupDirection) false
+    else if (!isOnTheWay(goalFloor)) false
+    else true
+  }
 
   def step: Unit = {
     if (isMoving)
@@ -51,9 +49,9 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
     updateState
   }
 
-  def isAscending: Boolean = goalFloors.head > floor
+  def isAscending: Boolean = isMoving && goalFloors.head > floor
 
-  def isDescending: Boolean = goalFloors.head < floor
+  def isDescending: Boolean = isMoving && goalFloors.head < floor
 
   def isStopped: Boolean = goalFloors.isEmpty
 
@@ -63,9 +61,11 @@ case class Elevator(id: Id, maxNumberOfGoals: Int) {
 
   private def nextFloor: Int = floor + (if (isAscending) 1 else if (isDescending) -1 else 0)
 
-  private def isOnTheWay(goalFloor: Int): Boolean =
-    if (isAscending) goalFloor > floor
-    else goalFloor < floor
+  def isOnTheWay(goalFloor: Int): Boolean =
+    if (isStopped) true
+    else if (isAscending) goalFloor > floor
+    else if (isDescending) goalFloor < floor
+    else false
 
   private def updateState: Unit = {
     if (goalFloors.nonEmpty  && floor == goalFloors.head)
