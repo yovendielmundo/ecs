@@ -33,9 +33,7 @@ object Main {
       |$: exit
     """.stripMargin
 
-  def showHelp: Unit = {
-    println(help)
-  }
+  def showHelp: Unit = println(help)
 
   def askCommand: Command = {
     println()
@@ -43,41 +41,40 @@ object Main {
     scala.io.StdIn.readLine()
   }
 
-  def printCommand(command: Command): Unit = {
-    println(s"ecs-command:$command =>")
+  def printCommand(command: Command): Unit = println(s"ecs-command:$command =>")
+
+  def whileCommand(executor: Command => Unit): Unit = {
+    val command = askCommand
+    printCommand(command)
+    executor(command)
+    if (command != Exit) whileCommand(executor)
   }
 
   def main(args: Array[String]): Unit = {
     val ecs = new MyElevatorControlSystem(numberOfElevators = 3)
 
     showHelp
-    var command: Command = Unknown
 
-    while (command != Exit) {
-      command = askCommand
-      printCommand(command)
-
-      command match {
-        case Status => println(ecs.status)
-        case Step => {
-          ecs.step
-          println("step")
-        }
-        case Update(id, floor, goalFloor) => {
-          try {
-            ecs.update(id, floor, goalFloor)
-            println(s"elevator: $id, floor: $floor, goal floor: $goalFloor")
-          } catch {
-            case e: IllegalArgumentException => println(e.getMessage)
-          }
-        }
-        case Pickup(pickupFloor, direction) => {
-          ecs.pickup(pickupFloor, direction)
-          println(s"pickup floor: $pickupFloor, direction: $direction")
-        }
-        case Exit => println("bye...")
-        case Unknown => showHelp
+    whileCommand {
+      case Status => println(ecs.status)
+      case Step => {
+        ecs.step
+        println("step")
       }
+      case Update(id, floor, goalFloor) => {
+        try {
+          ecs.update(id, floor, goalFloor)
+          println(s"elevator: $id, floor: $floor, goal floor: $goalFloor")
+        } catch {
+          case e: IllegalArgumentException => println(e.getMessage)
+        }
+      }
+      case Pickup(pickupFloor, direction) => {
+        ecs.pickup(pickupFloor, direction)
+        println(s"pickup floor: $pickupFloor, direction: $direction")
+      }
+      case Exit => println("bye...")
+      case Unknown => showHelp
     }
 
   }
